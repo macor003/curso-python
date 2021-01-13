@@ -15,6 +15,7 @@ Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 
+import json
 import logging
 
 import requests
@@ -41,14 +42,31 @@ def help_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Help!')
 
 
+class Char:
+
+    def __init__(self, name, vocation, level, world):
+        self.name = name
+        self.vocation = vocation
+        self.level = level
+        self.world = world
+
+
 def request_tibia(char_name):
     print('https://api.tibiadata.com/v2/characters/' + char_name + '.json')
     response = requests.get('https://api.tibiadata.com/v2/characters/' + char_name + '.json')
+    character = ''
     if response.status_code == 200:
         print('Request Success')
         print(str(response.content))
+        data = json.loads(response.content)
+        print(data)
+        print(data["characters"]['data']['vocation'])
+        character = Char(data["characters"]['data']['name'], data["characters"]['data']['vocation'],
+                         str(data["characters"]['data']['level']), data["characters"]['data']['world'])
     else:
         print('ERROR!!')
+
+    return character
 
 
 def char(update: Update, context: CallbackContext) -> None:
@@ -59,18 +77,13 @@ def char(update: Update, context: CallbackContext) -> None:
 
     update.message.reply_text('Hola ' + str(char_name.strip()) + '''.
     
-    Bienvenid@ al bot de tibia que te muestra todo 
-    lo que necesites.''')
+    Bienvenid@ al bot de tibia.''')
 
-    request_tibia(char_name)
+    character = request_tibia(char_name.strip().replace(' ', '+'))
 
+    update.message.reply_text(
+        'Hola ' + character.name + ', Eres un ' + character.vocation + ' Level ' + character.level + ' que juega en ' + character.world)
 
-def compa(update: Update, context: CallbackContext) -> None:
-    nombre = context.args[0].upper()
-    if nombre == 'EDGAR':
-        update.message.reply_text('Compa compa compa compa llegate compa te estamos esperando en Medellin')
-    else:
-        update.message.reply_text('Lo siento tu no eres el compa. Chao!')
 
 def echo(update: Update, context: CallbackContext) -> None:
     """Echo the user message."""
@@ -91,7 +104,6 @@ def main():
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("char", char))
-    dispatcher.add_handler(CommandHandler("compa", compa))
 
     # on noncommand i.e message - echo the message on Telegram
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
