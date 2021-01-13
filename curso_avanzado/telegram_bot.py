@@ -57,10 +57,10 @@ def request_tibia(char_name):
     character = ''
     if response.status_code == 200:
         print('Request Success')
-        print(str(response.content))
+        # print(str(response.content))
         data = json.loads(response.content)
-        print(data)
-        print(data["characters"]['data']['vocation'])
+        # print(data)
+
         character = Char(data["characters"]['data']['name'], data["characters"]['data']['vocation'],
                          str(data["characters"]['data']['level']), data["characters"]['data']['world'])
     else:
@@ -75,14 +75,20 @@ def char(update: Update, context: CallbackContext) -> None:
     for idx in range(0, count):
         char_name += context.args[idx] + ' '
 
-    update.message.reply_text('Hola ' + str(char_name.strip()) + '''.
-    
-    Bienvenid@ al bot de tibia.''')
-
     character = request_tibia(char_name.strip().replace(' ', '+'))
 
     update.message.reply_text(
-        'Hola ' + character.name + ', Eres un ' + character.vocation + ' Level ' + character.level + ' que juega en ' + character.world)
+        'Hola ' + character.name + ', Eres un ' + character.vocation + ' Level ' + character.level + ' y juegas en ' + character.world)
+
+
+def rashid(update: Update, context: CallbackContext) -> None:
+    response = requests.get('https://api.tibialabs.com/v1/rashid/city')
+    update.message.reply_text('Rashid esta ubicado hoy en: ' + response.text)
+
+
+def boosted(update: Update, context: CallbackContext) -> None:
+    response = requests.get('https://api.tibialabs.com/v1/boostedcreature/name')
+    update.message.reply_text('La creatura Boosted de hoy es: ' + response.text)
 
 
 def echo(update: Update, context: CallbackContext) -> None:
@@ -104,6 +110,8 @@ def main():
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("char", char))
+    dispatcher.add_handler(CommandHandler("rashid", rashid))
+    dispatcher.add_handler(CommandHandler("boosted", boosted))
 
     # on noncommand i.e message - echo the message on Telegram
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
