@@ -34,16 +34,26 @@ logger = logging.getLogger(__name__)
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    update.message.reply_text('''Hi!''')
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text('''
+Bienvenido!
+    
+Para hacer uso del bot ejecuta alguno de los siguientes comandos:
+   
+/char *NOMBRE_CHAR*
+/rashid
+/boosted
+/world NOMBRE_WORLD
+    
+    
+    ''')
 
 
 class Char:
-
     def __init__(self, name, vocation, level, world):
         self.name = name
         self.vocation = vocation
@@ -51,20 +61,27 @@ class Char:
         self.world = world
 
 
-def request_tibia(char_name):
+class World:
+    def __init__(self, players_online, creation_date, location, pvp_type, battleye_status):
+        self.players_online = players_online
+        self.creation_date = creation_date
+        self.location = location
+        self.pvp_type = pvp_type
+        self.battleye_status = battleye_status
+
+
+def request_char(char_name):
     print('https://api.tibiadata.com/v2/characters/' + char_name + '.json')
     response = requests.get('https://api.tibiadata.com/v2/characters/' + char_name + '.json')
     character = ''
     if response.status_code == 200:
         print('Request Success')
-        # print(str(response.content))
         data = json.loads(response.content)
-        # print(data)
-
         character = Char(data["characters"]['data']['name'], data["characters"]['data']['vocation'],
                          str(data["characters"]['data']['level']), data["characters"]['data']['world'])
     else:
         print('ERROR!!')
+        print(response.status_code)
 
     return character
 
@@ -75,25 +92,81 @@ def char(update: Update, context: CallbackContext) -> None:
     for idx in range(0, count):
         char_name += context.args[idx] + ' '
 
-    character = request_tibia(char_name.strip().replace(' ', '+'))
+    character = request_char(char_name.strip().replace(' ', '+'))
 
     update.message.reply_text(
-        'Hola ' + character.name + ', Eres un ' + character.vocation + ' Level ' + character.level + ' y juegas en ' + character.world)
+        ''' Hola  {} , Eres un {} Level {} y juegas en {}.
+
+Gracias por consultar, pronto tendremos mas información. 
+        '''.format(character.name, character.vocation, character.level, character.world))
+
+
+def request_world(world_name):
+    print('https://api.tibiadata.com/v2/world/' + world_name + '.json')
+    response = requests.get('https://api.tibiadata.com/v2/world/' + world_name + '.json')
+    world_object = ''
+    if response.status_code == 200:
+        print('Request Success')
+        data = json.loads(response.content)
+        world_object = World(str(data["world"]['world_information']['players_online']),
+                             data["world"]['world_information']['creation_date'],
+                             data["world"]['world_information']['location'],
+                             data["world"]['world_information']['pvp_type'],
+                             data["world"]['world_information']['battleye_status'])
+    else:
+        print('ERROR!!')
+        print(response.status_code)
+
+    return world_object
+
+
+def world(update: Update, context: CallbackContext) -> None:
+    world_name = context.args[0]
+    world = request_world(world_name.strip())
+
+    update.message.reply_text(
+        ''' 
+        El servidor de {} tiene actualmente las siguientes caracteristicas:
+
+Creado -> {}
+Jugadores enlinea -> {}
+Ubicado en -> {} 
+Es de tipo -> {}.
+
+{}
+ 
+        '''.format(world_name, world.creation_date, world.players_online, world.location, world.pvp_type,
+                   world.battleye_status))
 
 
 def rashid(update: Update, context: CallbackContext) -> None:
+    print('https://api.tibialabs.com/v1/rashid/city')
     response = requests.get('https://api.tibialabs.com/v1/rashid/city')
-    update.message.reply_text('Rashid esta ubicado hoy en: ' + response.text)
+
+    if response.status_code == 200:
+        print('Request Success')
+        update.message.reply_text('Rashid esta ubicado hoy en: ' + response.text)
+    else:
+        print('ERROR!!')
+        print(response.status_code)
 
 
 def boosted(update: Update, context: CallbackContext) -> None:
+    print('https://api.tibialabs.com/v1/boostedcreature/name')
     response = requests.get('https://api.tibialabs.com/v1/boostedcreature/name')
-    update.message.reply_text('La creatura Boosted de hoy es: ' + response.text)
+
+    if response.status_code == 200:
+        print('Request Success')
+        update.message.reply_text('La creatura Boosted de hoy es: ' + response.text)
+    else:
+        print('ERROR!!')
+        print(response.status_code)
 
 
 def echo(update: Update, context: CallbackContext) -> None:
     """Echo the user message."""
-    update.message.reply_text(update.message.text)
+    # update.message.reply_text(update.message.text)
+    update.message.reply_text('Lo siento no te entiendo, ejecuta /help para saber como usarme')
 
 
 def main():
@@ -112,6 +185,7 @@ def main():
     dispatcher.add_handler(CommandHandler("char", char))
     dispatcher.add_handler(CommandHandler("rashid", rashid))
     dispatcher.add_handler(CommandHandler("boosted", boosted))
+    dispatcher.add_handler(CommandHandler("world", world))
 
     # on noncommand i.e message - echo the message on Telegram
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
