@@ -19,7 +19,7 @@ import json
 import logging
 
 import requests
-from telegram import Update
+from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 # Enable logging
@@ -28,29 +28,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
-def start(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /start is issued."""
-    update.message.reply_text('''Hi!''')
-
-
-def help_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('''
-Bienvenido!
-    
-Para hacer uso del bot ejecuta alguno de los siguientes comandos:
-   
-/char *NOMBRE_CHAR*
-/rashid
-/boosted
-/world NOMBRE_WORLD
-    
-    
-    ''')
 
 
 class Char:
@@ -68,6 +45,29 @@ class World:
         self.location = location
         self.pvp_type = pvp_type
         self.battleye_status = battleye_status
+
+
+# Define a few command handlers. These usually take the two arguments update and
+# context. Error handlers also receive the raised TelegramError object in error.
+def start(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /start is issued."""
+    update.message.reply_text('''Hi!''')
+
+
+def help_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /help is issued."""
+    update.message.reply_text('''
+_Bienvenido!_
+    
+Para hacer uso del bot ejecuta alguno de los siguientes comandos:
+   
+/char *NOMBRE_CHAR*
+/rashid
+/boosted
+/world *NOMBRE_WORLD*
+    
+    
+    ''', ParseMode.MARKDOWN_V2)
 
 
 def request_char(char_name):
@@ -93,12 +93,12 @@ def char(update: Update, context: CallbackContext) -> None:
         char_name += context.args[idx] + ' '
 
     character = request_char(char_name.strip().replace(' ', '+'))
+    mensaje_salida = ''' Hola  *{}* , Eres un _{}_ Level _{}_ y juegas en *{}*.
 
-    update.message.reply_text(
-        ''' Hola  {} , Eres un {} Level {} y juegas en {}.
+    _Gracias por consultar, pronto tendremos mas información._ 
+            '''.format(character.name, character.vocation, character.level, character.world)
 
-Gracias por consultar, pronto tendremos mas información. 
-        '''.format(character.name, character.vocation, character.level, character.world))
+    update.message.reply_text(mensaje_salida, ParseMode.MARKDOWN)
 
 
 def request_world(world_name):
@@ -122,14 +122,14 @@ def request_world(world_name):
 
 def world(update: Update, context: CallbackContext) -> None:
     world_name = context.args[0]
-    world = request_world(world_name.strip())
+    world = request_world(world_name.strip().lower())
 
     update.message.reply_text(
         ''' 
-        El servidor de {} tiene actualmente las siguientes caracteristicas:
+        El servidor de {} tiene actualmente las siguientes características:
 
-Creado -> {}
-Jugadores enlinea -> {}
+Creado -> __{}__
+Jugadores en linea -> <b>{}</b>
 Ubicado en -> {} 
 Es de tipo -> {}.
 
@@ -145,7 +145,7 @@ def rashid(update: Update, context: CallbackContext) -> None:
 
     if response.status_code == 200:
         print('Request Success')
-        update.message.reply_text('Rashid esta ubicado hoy en: ' + response.text)
+        update.message.reply_text('Rashid esta ubicado hoy en: *' + response.text + '*', ParseMode.MARKDOWN_V2)
     else:
         print('ERROR!!')
         print(response.status_code)
@@ -157,7 +157,7 @@ def boosted(update: Update, context: CallbackContext) -> None:
 
     if response.status_code == 200:
         print('Request Success')
-        update.message.reply_text('La creatura Boosted de hoy es: ' + response.text)
+        update.message.reply_text('La creatura Boosted de hoy es:  *' + response.text + '*', ParseMode.MARKDOWN_V2)
     else:
         print('ERROR!!')
         print(response.status_code)
