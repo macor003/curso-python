@@ -67,7 +67,7 @@ Para hacer uso del bot ejecuta alguno de los siguientes comandos:
 /world *NOMBRE_WORLD*
     
     
-    ''', ParseMode.MARKDOWN_V2)
+    ''', ParseMode.MARKDOWN)
 
 
 def request_char(char_name):
@@ -126,17 +126,17 @@ def world(update: Update, context: CallbackContext) -> None:
 
     update.message.reply_text(
         ''' 
-        El servidor de {} tiene actualmente las siguientes características:
+        El servidor de *{}* tiene actualmente las siguientes características:
 
-Creado -> __{}__
-Jugadores en linea -> <b>{}</b>
-Ubicado en -> {} 
-Es de tipo -> {}.
+Creado: *{}*
+Jugadores en linea: *{}*
+Ubicado en: *{}*
+Es de tipo: *{}*.
 
-{}
+_{}_
  
-        '''.format(world_name, world.creation_date, world.players_online, world.location, world.pvp_type,
-                   world.battleye_status))
+        '''.format(world_name.capitalize(), world.creation_date, world.players_online, world.location, world.pvp_type,
+                   world.battleye_status), ParseMode.MARKDOWN)
 
 
 def rashid(update: Update, context: CallbackContext) -> None:
@@ -145,7 +145,7 @@ def rashid(update: Update, context: CallbackContext) -> None:
 
     if response.status_code == 200:
         print('Request Success')
-        update.message.reply_text('Rashid esta ubicado hoy en: *' + response.text + '*', ParseMode.MARKDOWN_V2)
+        update.message.reply_text('Rashid esta ubicado hoy en: *' + response.text + '*', ParseMode.MARKDOWN)
     else:
         print('ERROR!!')
         print(response.status_code)
@@ -157,7 +157,7 @@ def boosted(update: Update, context: CallbackContext) -> None:
 
     if response.status_code == 200:
         print('Request Success')
-        update.message.reply_text('La creatura Boosted de hoy es:  *' + response.text + '*', ParseMode.MARKDOWN_V2)
+        update.message.reply_text('La creatura Boosted de hoy es:  *' + response.text + '*', ParseMode.MARKDOWN)
     else:
         print('ERROR!!')
         print(response.status_code)
