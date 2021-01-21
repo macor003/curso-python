@@ -51,13 +51,19 @@ class World:
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
-    update.message.reply_text('''Hi!''')
+    update.message.reply_text('''
+    
+    *Hola Bienvenid@ al bot de Tibia en Español!*
+    
+    Para conocer los comandos disponibles utiliza /help
+    
+    ''', ParseMode.MARKDOWN)
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text('''
-_Bienvenido!_
+_Bienvenid@!_
     
 Para hacer uso del bot ejecuta alguno de los siguientes comandos:
    
