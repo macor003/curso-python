@@ -77,17 +77,17 @@ Para hacer uso del bot ejecuta alguno de los siguientes comandos:
 
 
 def request_char(char_name):
-    print('https://api.tibiadata.com/v2/characters/' + char_name + '.json')
+    logging.info('https://api.tibiadata.com/v2/characters/' + char_name + '.json')
     response = requests.get('https://api.tibiadata.com/v2/characters/' + char_name + '.json')
     character = ''
     if response.status_code == 200:
-        print('Request Success')
+        logging.info('Request Success')
         data = json.loads(response.content)
         character = Char(data["characters"]['data']['name'], data["characters"]['data']['vocation'],
                          str(data["characters"]['data']['level']), data["characters"]['data']['world'])
     else:
-        print('ERROR!!')
-        print(response.status_code)
+        logging.error('ERROR!!')
+        logging.error(response.status_code)
 
     return character
 
@@ -108,11 +108,11 @@ def char(update: Update, context: CallbackContext) -> None:
 
 
 def request_world(world_name):
-    print('https://api.tibiadata.com/v2/world/' + world_name + '.json')
+    logging.info('https://api.tibiadata.com/v2/world/' + world_name + '.json')
     response = requests.get('https://api.tibiadata.com/v2/world/' + world_name + '.json')
     world_object = ''
     if response.status_code == 200:
-        print('Request Success')
+        logging.info('Request Success')
         data = json.loads(response.content)
         world_object = World(str(data["world"]['world_information']['players_online']),
                              data["world"]['world_information']['creation_date'],
@@ -120,8 +120,8 @@ def request_world(world_name):
                              data["world"]['world_information']['pvp_type'],
                              data["world"]['world_information']['battleye_status'])
     else:
-        print('ERROR!!')
-        print(response.status_code)
+        logging.error('ERROR!!')
+        logging.error(response.status_code)
 
     return world_object
 
@@ -146,27 +146,27 @@ _{}_
 
 
 def rashid(update: Update, context: CallbackContext) -> None:
-    print('https://api.tibialabs.com/v1/rashid/city')
+    logging.info('https://api.tibialabs.com/v1/rashid/city')
     response = requests.get('https://api.tibialabs.com/v1/rashid/city')
 
     if response.status_code == 200:
-        print('Request Success')
+        logging.info('Request Success')
         update.message.reply_text('Rashid esta ubicado hoy en: *' + response.text + '*', ParseMode.MARKDOWN)
     else:
-        print('ERROR!!')
-        print(response.status_code)
+        logging.error('ERROR!!')
+        logging.error(response.status_code)
 
 
 def boosted(update: Update, context: CallbackContext) -> None:
-    print('https://api.tibialabs.com/v1/boostedcreature/name')
+    logging.info('https://api.tibialabs.com/v1/boostedcreature/name')
     response = requests.get('https://api.tibialabs.com/v1/boostedcreature/name')
 
     if response.status_code == 200:
-        print('Request Success')
+        logging.info('Request Success')
         update.message.reply_text('La creatura Boosted de hoy es:  *' + response.text + '*', ParseMode.MARKDOWN)
     else:
-        print('ERROR!!')
-        print(response.status_code)
+        logging.error('ERROR!!')
+        logging.error(response.status_code)
 
 
 def echo(update: Update, context: CallbackContext) -> None:
